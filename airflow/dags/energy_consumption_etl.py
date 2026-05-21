@@ -79,4 +79,23 @@ def load_task_func(**context):
 
 load = PythonOperator(
     task_id='load',
-    python_callable
+    python_callable=load_task_func,
+    dag=dag
+)
+
+quality_check = PythonOperator(
+    task_id='quality_check',
+    python_callable=run_quality_checks,
+    dag=dag
+)
+
+drift_check = PythonOperator(
+    task_id='drift_check',
+    python_callable=run_drift_analysis,
+    dag=dag
+)
+
+end = DummyOperator(task_id='end', dag=dag)
+
+# Порядок выполнения
+start >> extract >> transform >> load >> [quality_check, drift_check] >> end
